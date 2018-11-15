@@ -1,0 +1,26 @@
+# Coalescence function
+
+coalescence <- function(J = size, v = speciation_rate){
+  lineages <- rep(1,J)
+  N <- J
+  abundances <-c()
+  sigma <- v*(N-1)/(1-v)
+  while(N>1){
+    j <- sample(1:N,1)
+    randnum <- runif(1,0,1)
+    p_val <- sigma/(sigma + N -1)
+    if(randnum<p_val){
+      abundances <- append(abundances, lineages[j])
+    } else{
+      seqn <- seq(1, N,1)
+      i <- sample(seqn[seqn != j],1)
+      lineages[i] <- lineages[i] + lineages[j]
+    }
+    lineages <- lineages[-j]
+    N <- N - 1
+    
+  }
+  abundances <- append(abundances, lineages[1])
+  return(abundances)
+}
+tmp <- coalescence(100000, 0.0001)
