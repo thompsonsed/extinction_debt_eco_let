@@ -277,51 +277,7 @@ dev.off()
 # Figure 2 #
 ############
 ggthemr("light")
-# Figure 2
-# Lack of scaling collapse for random solution in real and contrived scenarios
-ggthemr('light')
-p1 <- main_df %>% filter(sigma > 2) %>% ggplot()+
-  theme_classic() + scale_x_log10(breaks = scales::trans_breaks("log10", function(x) 10^x, n=4),
-                                  labels = scales::trans_format("log10", scales::math_format(10^.x))) + 
-  scale_y_log10(breaks = scales::trans_breaks("log10", function(x) 10^x, n=4),
-                labels = scales::trans_format("log10", scales::math_format(10^.x)))+
-  geom_point(aes(y = richness/(proportion_cover * sigma^2),
-                 x = size^2/sigma^2,
-                 colour = type,
-                 shape=as.factor(sigma)),alpha=0.4)+
-  xlab(expression(paste("Scaled area (", A[max]/sigma^2, ")"))) + 
-  ylab(expression(paste("Scaled species richness (", S*A[max]/(A[e]*sigma^2), ")"))) + 
-  scale_colour_discrete("Landscape type", 
-                        labels=c( "Random","Clustered", "Real", "Contiguous"))+
-  scale_shape_discrete(expression(sigma)) + 
-  theme(aspect.ratio=1) + 
-  ggtitle(expression(paste("Scaling with ", (A[e]/A[max])*sigma^2)))+
-  guides(colour = guide_legend(title.position="top", title.hjust = 0.5, override.aes = list(alpha = 1)),
-         shape = guide_legend(title.position="top", title.hjust = 0.5, override.aes = list(alpha = 1)))
-p2 <-main_df %>% filter(sigma > 2) %>% ggplot()+
-  theme_classic() + 
-  scale_x_log10(breaks = scales::trans_breaks("log10", function(x) 10^x, n=4),
-                labels = scales::trans_format("log10", scales::math_format(10^.x))) + 
-  scale_y_log10(breaks = scales::trans_breaks("log10", function(x) 10^x, n=4),
-                labels = scales::trans_format("log10", scales::math_format(10^.x)))+
-  geom_point(aes(y = richness/(sigma^2),
-                 x = proportion_cover*size^2/sigma^2,
-                 colour = type,
-                 shape=as.factor(sigma)),alpha=0.4)+
-  xlab(expression(paste("Scaled area (", A[e]/sigma^2, ")"))) + 
-  ylab(expression(paste("Scaled species richness (", S/sigma^2, ")"))) +
-  scale_colour_discrete("Landscape type", 
-                        labels=c( "Random","Clustered", "Real", "Contiguous"))+
-  guides(colour = guide_legend(override.aes = list(alpha = 1)),
-         shape = guide_legend(override.aes = list(alpha = 1)))+
-  scale_shape_discrete(expression(sigma))+
-  theme(aspect.ratio=1) + 
-  ggtitle(expression(paste("Scaling with ", sigma^2)))+
-  guides(colour = guide_legend(title.position="top", title.hjust = 0.5, override.aes = list(alpha = 1)),
-         shape = guide_legend(title.position="top", title.hjust = 0.5, override.aes = list(alpha = 1)))
-gga <- ggarrange(p2, p1, common.legend = TRUE, legend="bottom", 
-                 labels = c("a)", "b)")) + guides(colour = guide_legend(override.aes = list(alpha = 1)),
-                                                  shape = guide_legend(override.aes = list(alpha = 1)))
+
 p1 <- main_df %>% filter(sigma > 4) %>% 
   ggplot(aes(x=area,
              y=richness))+
@@ -329,16 +285,20 @@ p1 <- main_df %>% filter(sigma > 4) %>%
                                   labels = scales::trans_format("log10", scales::math_format(10^.x))) +
   scale_y_log10(breaks = scales::trans_breaks("log10", function(x) 10^x),
                 labels = scales::trans_format("log10", scales::math_format(10^.x)))+
-  xlab(expression(paste("Rescaled area (",A[e] / c[e]^2, ")"))) + geom_point(aes(colour = type),
-                                                                                   alpha=0.4)+
-  ylab(expression(paste("Rescaled species richness (", S/c[e]^2, ")"))) + 
+  xlab(expression(paste("Area (", A[e], ")"))) + geom_point(aes(colour = type),
+                                                                             alpha=0.4)+
+  ylab(expression(paste("Species richness (", S, ")"))) + 
   scale_colour_discrete("Landscape type")+
   scale_shape_discrete(expression(sigma))+
-  guides(colour = guide_legend(override.aes = list(alpha = 1)),
-         shape = guide_legend(override.aes = list(alpha = 1)))+
-  theme(aspect.ratio = 1.0)
-  # theme(legend.position = c(0.3, 0.7))
-p1
+  guides(colour = guide_legend(override.aes = list(alpha = 1),
+                               nrow=2, byrow=TRUE,
+                               title.position="top",
+                               title.hjust = 0.5),
+         shape = guide_legend(override.aes = list(alpha = 1),
+                              nrow=2, byrow=TRUE, title.position="top",
+                              title.hjust = 0.5))+
+  theme(aspect.ratio = 1.0, plot.title = element_text(size = 10)) + 
+  ggtitle("Unscaled species-area curve")
 p2 <- main_df %>% filter(sigma > 4) %>% 
   ggplot(aes(x=area/effective_connectivity^2,
              y=richness/effective_connectivity^2))+
@@ -346,21 +306,25 @@ p2 <- main_df %>% filter(sigma > 4) %>%
                                   labels = scales::trans_format("log10", scales::math_format(10^.x))) +
   scale_y_log10(breaks = scales::trans_breaks("log10", function(x) 10^x),
                 labels = scales::trans_format("log10", scales::math_format(10^.x)))+
-  xlab("Area") + geom_point(aes(colour = type),
+  xlab(expression(paste("Rescaled area (",A[e] / c[e]^2, ")"))) + geom_point(aes(colour = type),
                                                                              alpha=0.4)+
-  ylab("Species richness") + 
+  ylab(expression(paste("Rescaled species richness (", S/c[e]^2, ")"))) + 
   scale_colour_discrete("Landscape type")+
   scale_shape_discrete(expression(sigma))+
-  guides(colour = guide_legend(override.aes = list(alpha = 1)),
-         shape = guide_legend(override.aes = list(alpha = 1)))  + 
-  theme(aspect.ratio = 1.0)
-  # theme(legend.position = c(0.3, 0.7))
-gga <- ggarrange(p1, p2, common.legend = TRUE, legend="bottom", 
-                 labels = c("a)", "b)")) + guides(colour = guide_legend(override.aes = list(alpha = 1)),
-                                                  shape = guide_legend(override.aes = list(alpha = 1)))
-gga
-pdf(file.path(figure_dir, "figure2.pdf"), 3.23, 3)
-print(p2)
+  guides(colour = guide_legend(override.aes = list(alpha = 1),
+                               nrow=2, byrow=TRUE,
+                               title.position="top",
+                               title.hjust = 0.5),
+         shape = guide_legend(override.aes = list(alpha = 1),
+                              nrow=2, byrow=TRUE, title.position="top",
+                              title.hjust = 0.5))+
+
+  theme(aspect.ratio = 1.0, plot.title = element_text(size = 10)) + 
+  ggtitle("Rescaled species-area curve")
+gga2 <- ggarrange(p1, p2, common.legend = TRUE, legend="bottom", nrow = 2, ncol=1,
+                 labels = c("a)", "b)"), heights = c(0.95, 1.0))
+pdf(file.path(figure_dir, "figure2.pdf"), 3.23, 7)
+print(gga2)
 dev.off()
 ggthemr_reset()
 
@@ -523,32 +487,30 @@ dev.off()
 # Figure 2
 # Lack of scaling collapse for random solution in real and contrived scenarios
 ggthemr('light')
-p1 <- main_df %>% filter(sigma > 2) %>% ggplot()+
-  theme_classic() + scale_x_log10(breaks = scales::trans_breaks("log10", function(x) 10^x, n=4),
-                                  labels = scales::trans_format("log10", scales::math_format(10^.x))) + 
-  scale_y_log10(breaks = scales::trans_breaks("log10", function(x) 10^x, n=4),
+p1 <- main_df %>% filter(sigma > 4) %>% 
+  ggplot(aes(x=area,
+             y=richness))+
+  theme_classic() + scale_x_log10(breaks = scales::trans_breaks("log10", function(x) 10^x),
+                                  labels = scales::trans_format("log10", scales::math_format(10^.x))) +
+  scale_y_log10(breaks = scales::trans_breaks("log10", function(x) 10^x),
                 labels = scales::trans_format("log10", scales::math_format(10^.x)))+
-  geom_point(aes(y = richness/(proportion_cover * sigma^2),
-                 x = size^2/sigma^2,
-                 colour = type,
-                 shape=as.factor(sigma)),alpha=0.4)+
-  xlab(expression(paste("Scaled area (", A[max]/sigma^2, ")"))) + 
-  ylab(expression(paste("Scaled species richness (", S*A[max]/(A[e]*sigma^2), ")"))) + 
-  scale_colour_discrete("Landscape type", 
-                        labels=c( "Random","Clustered", "Real", "Contiguous"))+
-  scale_shape_discrete(expression(sigma)) + 
-  theme(aspect.ratio=1) + 
-  ggtitle(expression(paste("Scaling with ", (A[e]/A[max])*sigma^2)))+
+  xlab(expression(paste("Area (", A[e], ")"))) +
+  geom_point(aes(colour = type, shape=as.factor(sigma)), alpha=0.4)+
+  ylab(expression(paste("Species richness (", S, ")"))) + 
+  scale_colour_discrete("Landscape type")+
+  scale_shape_discrete(expression(sigma))+
   guides(colour = guide_legend(title.position="top", title.hjust = 0.5, override.aes = list(alpha = 1)),
-         shape = guide_legend(title.position="top", title.hjust = 0.5, override.aes = list(alpha = 1)))
-p2 <-main_df %>% filter(sigma > 2) %>% ggplot()+
+         shape = guide_legend(title.position="top", title.hjust = 0.5, override.aes = list(alpha = 1)))+
+  theme(aspect.ratio = 1.0, plot.title = element_text(size = 10)) + 
+  ggtitle("Unscaled species-area curve")
+p2 <-main_df %>% filter(sigma > 4) %>% ggplot()+
   theme_classic() + 
   scale_x_log10(breaks = scales::trans_breaks("log10", function(x) 10^x, n=4),
                 labels = scales::trans_format("log10", scales::math_format(10^.x))) + 
   scale_y_log10(breaks = scales::trans_breaks("log10", function(x) 10^x, n=4),
                 labels = scales::trans_format("log10", scales::math_format(10^.x)))+
   geom_point(aes(y = richness/(sigma^2),
-                 x = proportion_cover*size^2/sigma^2,
+                 x = area/sigma^2,
                  colour = type,
                  shape=as.factor(sigma)),alpha=0.4)+
   xlab(expression(paste("Scaled area (", A[e]/sigma^2, ")"))) + 
@@ -558,14 +520,49 @@ p2 <-main_df %>% filter(sigma > 2) %>% ggplot()+
   guides(colour = guide_legend(override.aes = list(alpha = 1)),
          shape = guide_legend(override.aes = list(alpha = 1)))+
   scale_shape_discrete(expression(sigma))+
-  theme(aspect.ratio=1) + 
+  theme(aspect.ratio=1, plot.title = element_text(size = 10)) + 
   ggtitle(expression(paste("Scaling with ", sigma^2)))+
   guides(colour = guide_legend(title.position="top", title.hjust = 0.5, override.aes = list(alpha = 1)),
          shape = guide_legend(title.position="top", title.hjust = 0.5, override.aes = list(alpha = 1)))
-gga <- ggarrange(p2, p1, common.legend = TRUE, legend="bottom", 
-                 labels = c("a)", "b)")) + guides(colour = guide_legend(override.aes = list(alpha = 1)),
-                                                  shape = guide_legend(override.aes = list(alpha = 1)))
-pdf(file.path(figure_dir, "appendices", "appendix2_figure2.pdf"), 6.7, 4)
+p3 <- main_df %>% filter(sigma > 4) %>% ggplot()+
+  theme_classic() + scale_x_log10(breaks = scales::trans_breaks("log10", function(x) 10^x, n=4),
+                                  labels = scales::trans_format("log10", scales::math_format(10^.x))) + 
+  scale_y_log10(breaks = scales::trans_breaks("log10", function(x) 10^x, n=4),
+                labels = scales::trans_format("log10", scales::math_format(10^.x)))+
+  geom_point(aes(y = richness/(proportion_cover * sigma^2),
+                 x = area/sigma^2,
+                 colour = type,
+                 shape=as.factor(sigma)),alpha=0.4)+
+  xlab(expression(paste("Scaled area (", A[e]/omega^2, ")"))) + 
+  ylab(expression(paste("Scaled species richness (", S/omega^2, ")"))) + 
+  scale_colour_discrete("Landscape type", 
+                        labels=c( "Random","Clustered", "Real", "Contiguous"))+
+  scale_shape_discrete(expression(sigma)) + 
+  theme(aspect.ratio=1, plot.title = element_text(size = 10)) + 
+  ggtitle(expression(paste("Scaling with ", omega^2==(A[e]/A[max])*sigma^2)))+
+  guides(colour = guide_legend(title.position="top", title.hjust = 0.5, override.aes = list(alpha = 1)),
+         shape = guide_legend(title.position="top", title.hjust = 0.5, override.aes = list(alpha = 1)))
+p4 <- main_df %>% filter(sigma > 4) %>% ggplot()+
+  theme_classic() + scale_x_log10(breaks = scales::trans_breaks("log10", function(x) 10^x, n=4),
+                                  labels = scales::trans_format("log10", scales::math_format(10^.x))) + 
+  scale_y_log10(breaks = scales::trans_breaks("log10", function(x) 10^x, n=4),
+                labels = scales::trans_format("log10", scales::math_format(10^.x)))+
+  geom_point(aes(y = richness/(effective_connectivity^2),
+                 x = area/(effective_connectivity^2),
+                 colour = type,
+                 shape=as.factor(sigma)),alpha=0.4)+
+  xlab(expression(paste("Scaled area (", A[e]/c[e]^2, ")"))) + 
+  ylab(expression(paste("Scaled species richness (", S/c[e]^2, ")"))) + 
+  scale_colour_discrete("Landscape type", 
+                        labels=c( "Random","Clustered", "Real", "Contiguous"))+
+  scale_shape_discrete(expression(sigma)) + 
+  theme(aspect.ratio=1, plot.title = element_text(size = 10)) + 
+  ggtitle(expression(paste("Scaling with ", c[e]^2==(A[e]/A[max])*sigma[e]^2)))+
+  guides(colour = guide_legend(title.position="top", title.hjust = 0.5, override.aes = list(alpha = 1)),
+         shape = guide_legend(title.position="top", title.hjust = 0.5, override.aes = list(alpha = 1)))
+gga <- ggarrange(p1, p2, p3, p4, common.legend = TRUE, legend="bottom", nrow = 2, ncol=2,
+                 labels = c("a)", "b)", "c)", "d)"), heights = c(0.95, 1.0), widths=c(0.92, 1.0))
+pdf(file.path(figure_dir, "appendices", "appendix2_figure2.pdf"), 6.7, 7.5)
 print(gga)
 dev.off()
 ggthemr_reset()
