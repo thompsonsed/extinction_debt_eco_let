@@ -1,6 +1,6 @@
 # Code examples for pycoalescence usage
-[![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/thompsonsed/extinction_debt_eco_let/master)
-[![Documentation status](https://readthedocs.org/projects/pycoalescence/badge/)](https://pycoalescence.readthedocs.io)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/thompsonsed/extinction_debt_eco_let/master?filepath=%2Fhome%2Fextinction_debt_eco_let%2Fexample_simulation.ipynb)
+[![Documentation status](https://readthedocs.org/projects/pip/badge/?version=latest&style=flat)](https://pycoalescence.readthedocs.io)
 
 
 This repository contains examples of the pycoalescence package described [here](https://pycoalescence.readthedocs.io) 
