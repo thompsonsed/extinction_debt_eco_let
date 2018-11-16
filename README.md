@@ -1,5 +1,5 @@
 # Code examples for pycoalescence usage
-[![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/thompsonsed/extinction_debt_eco_let)
+[![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/thompsonsed/extinction_debt_eco_let/master)
 [![Documentation status](https://readthedocs.org/projects/pycoalescence/badge/)](https://pycoalescence.readthedocs.io)
 
 
