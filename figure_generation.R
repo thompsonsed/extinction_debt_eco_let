@@ -42,7 +42,18 @@ example_sim_data$map_file <- factor(example_sim_data$map_file,
                                     labels = c("Random",
                                                "Clustered",
                                                "Real"))
-# Generate the summary statistics for plotting the bar charts and equilibrium lines
+# Find the mean richness prior clearing (should be 1536)
+mean_prior_clearing <- (example_sim_data %>% ungroup %>%
+  filter(time_since_pristine < 0 & time_since_pristine > -200) %>%
+  summarise(mean_richness = mean(mean_richness)))$mean_richness
+# Calculate the average species loss for each scenario
+example_sim_averages <- example_sim_data %>% ungroup() %>%
+  filter(time_since_pristine == -997499, speciation == "False") %>% 
+  select(mean_richness, map_file) %>%
+  mutate(mean_percentage_remaining = 100*mean_richness/mean_prior_clearing,
+         mean_richness_lost = mean_prior_clearing - mean_richness,
+         mean_percentage_lost = 100-mean_percentage_remaining)
+# Generate the summary statistics for plotting the equilibrium lines
 example_sim_summary <- example_sim_data%>% group_by(map_file, speciation) %>% 
   filter(speciation == "False") %>%
   summarise(contig_richness = mean_richness[which(time_since_pristine == 0)],
@@ -416,43 +427,92 @@ dev.off()
 # Figure 5 #
 ############
 
-analytical_approx_best_case <- data.frame(expand.grid(prop_cover=seq(0.00, 0.99, 0.001), 
-                                                      a_max=c(100^2, 1000^2, 10000^2),
+zeroes_df <- data.frame(expand.grid(area=0.0, speciation_rate=c(1e-8, 1e-6, 1e-4))) %>%
+  mutate(prop_cover =0.0,
+         sigma=16, a_max=1000^2,
+         z = ifelse(speciation_rate == 1e-8, 0.1, ifelse(speciation_rate == 1e-6, 0.2, 0.3)),
+         a_max_str=as.character(sqrt(a_max)),
+         pc_cover_str = as.character(0.0),
+         best_case_richness = 0.0,
+         contig_richness=S_contig(a_max, speciation_rate, sigma^2),
+         best_case_instant = 0.0,
+         worst_case_instant=0.0,
+         contiguous_area_est=0.0,
+         power_law_est = 0.0,
+         best_case_pc = 0.0)
+
+analytical_approx_best_case <- data.frame(expand.grid(prop_cover=seq(0.01, 0.99, 0.001),
                                                       speciation_rate=c(1e-8, 1e-6, 1e-4),
-                                                      sigma=c(8, 16, 32))) %>% rowwise %>%
+                                                      sigma=16, a_max=1000^2)) %>%
   mutate(area=a_max * prop_cover,
+         z = ifelse(speciation_rate == 1e-8, 0.1, ifelse(speciation_rate == 1e-6, 0.2, 0.3)),
          a_max_str = as.character(sqrt(a_max)),
          pc_cover_str = as.character(prop_cover),
-         best_case_richness = ifelse(area == 0.0, 0.0,
-                                     S_random_equilibrium(a_max, area, speciation_rate, sigma^2)),
+         best_case_richness = S_random_equilibrium(a_max, area, speciation_rate, sigma^2),
          contig_richness = S_contig(a_max, speciation_rate, sigma^2),
-         species_area_est = ifelse(prop_cover==0.0, 0.0,
-                                   100*S_contig(area, speciation_rate, sigma^2)/contig_richness),
-         best_case_pc = 100*best_case_richness/contig_richness)
-p <- analytical_approx_best_case %>% filter(a_max == 1000^2) %>% 
-  ggplot(aes(x=prop_cover*100, y=best_case_pc)) + theme_classic() +
-  geom_line(data=analytical_approx_best_case %>% filter(speciation_rate == 1e-8, a_max == 1000^2), 
-            aes(linetype="Actual long-term\noutcome (best case)"), size=0.75, colour="black") +
+         best_case_instant = 100*S_random(a_max, area, speciation_rate, sigma^2)/contig_richness,
+         worst_case_instant = 100*S_contig(area, speciation_rate, sigma^2)/contig_richness,
+         contiguous_area_est = 100*S_contig(area, speciation_rate, sigma^2)/contig_richness,
+         power_law_est = 100*power_law_estimation(a_max, area, z),
+         best_case_pc = 100*best_case_richness/contig_richness) %>%
+  rbind(zeroes_df)
+ggthemr("light")
+p1 <- analytical_approx_best_case %>% 
+  ggplot() + 
+  geom_line(aes(x=prop_cover*100, y=power_law_est, colour=as.factor(z))) + 
+  geom_line(aes(x=prop_cover*100, y=best_case_pc), linetype="dotted", colour=plot_colours[9])+
+  theme_classic() + 
+  scale_colour_discrete("Z parameter", labels=c(expression(z == 0.1,
+  z == 0.2,
+  z == 0.3)))+
   xlab("Percentage of habitat remaining")+
   ylab("Percentage of species\nrichness at equilibrium")+
-  ylim(0, 100)+
-  geom_line(aes(y=species_area_est, 
-                colour=as.factor(speciation_rate)), linetype="solid", size=0.75) + 
-  scale_colour_brewer("Naïve species-area\napproach", palette="Pastel2",
-                      # breaks=c(10^-8, 10^-6, 10^-4),
-                      labels=expression(nu==10^-8,
-                                        nu==10^-6,
-                                        nu==10^-4))+
-  facet_grid(.~sigma, labeller = labeller(sigma=sigma_names))+
-  scale_linetype_manual("Actual long-term\noutcome (best case)",
-                        breaks=c("Actual long-term\noutcome (best case)"),
-                        labels=c(""),
-                        values=c("dotted")) +
-  guides(linetype=guide_legend(override.aes=list(colour="black")))+
-  theme(aspect.ratio=1, legend.key.size = unit(1.5, 'lines')) 
-pdf(file.path(figure_dir, "figure5.pdf"), 6.7, 3)
-print(p)
+  ylim(c(0, 100))+
+  theme(aspect.ratio=1, legend.key.size = unit(1.5, 'lines'),
+        legend.position = c(0.8, 0.3),
+        legend.background = element_rect(size = 0.5, colour = 1),
+        legend.title = element_text(size=10),
+        legend.text = element_text(size=8),
+        plot.title = element_text(size=10)) + 
+  ggtitle("Power law approach vs\nlong-term Preston function (best case)")
+
+p2 <- analytical_approx_best_case %>% filter(speciation_rate == 10^-6) %>%
+  ggplot() + 
+  geom_line(aes(x=prop_cover*100, y=best_case_instant,
+                  linetype="Short-term\n(best case)", colour="Short-term\n(best case)")) +
+  geom_line(aes(x=prop_cover*100, y=worst_case_instant,
+                linetype="Short-term\n(worst case)", colour="Short-term\n(worst case)")) +
+  geom_line(aes(x=prop_cover*100, y=best_case_pc), linetype="dotted", colour=plot_colours[9])+
+  theme_classic() + 
+  scale_linetype_discrete(element_blank())+
+  scale_colour_manual(element_blank(), values=c(plot_colours[1], plot_colours[3]))+
+  xlab("Percentage of habitat remaining")+
+  ylab("Percentage of species\nrichness at equilibrium")+
+  ylim(c(0, 100))+
+  theme(aspect.ratio=1, legend.key.size = unit(1.5, 'lines'),
+        plot.title = element_text(size=10),
+        legend.margin = margin(0, 0.5, 0.5, 0.5, unit = "line"),
+        legend.position = c(0.75, 0.3),
+        legend.background = element_rect(size = 0.5, colour = 1),
+        legend.title = element_text(size=10),
+        legend.text = element_text(size=8)) + 
+  ggtitle("Short-term Preston function vs\nlong-term Preston function (best case)")
+
+p_temp <-analytical_approx_best_case %>% filter(speciation_rate == 10^-8) %>%
+  ggplot() + 
+  geom_line(aes(x=prop_cover*100, y=best_case_pc, linetype=as.factor(speciation_rate)),
+            colour=plot_colours[9]) + 
+  theme_classic() + 
+  scale_linetype_manual(element_blank(), labels=c("Long-term Preston function (best case)"),
+                        values=c("dotted"))
+l <- get_legend(p_temp)
+gga1 <- ggarrange(p1, p2, labels = c("a)",
+                                     "b)"))
+gga2 <- ggarrange(gga1, l, heights=c(1.0, 0.08), nrow = 2, ncol=1)
+pdf(file.path(figure_dir, "figure5.pdf"), 5.57, 3.8)
+print(gga2)
 dev.off()
+ggthemr_reset()
 
 ################
 ## Appendices ##

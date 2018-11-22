@@ -4,10 +4,25 @@
 
 
 This repository contains examples of the pycoalescence package described [here](https://pycoalescence.readthedocs.io) 
-in support of Thompson *et al* (2018, in prep.).
+in support of Thompson *et al* (2018, in prep.). Primarily, the binder jupyter notebook can be run through a browser to
+demonstrate the simulation process used in the paper for both spatially explicit neutral models and calculations of the 
+effective connectivity parameter.
 
-The binder jupyter notebook demonstrates an example of the simulation process for spatially explicit neutral models and
-calculations of the effective connectivity parameter.
+
+### File overview
+
+- **example\_simulation.ipynb**: run simulations through MyBinder as an example of how models were performed.
+
+- **figure\_generation.R**: generate the figures shown in the main text using simulation results stored in csv files in
+  *results* folder.
+  
+- **table_generation.R**: generate the summary data for the table in the main text.
+  
+- **plot\_colours.R**: controls the colours and labels for the plots.
+
+- **preston.R**: contains functions for generating the analytical solutions from the Preston function.
+
+
 
 ### Technical details
 
