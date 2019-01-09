@@ -6,8 +6,8 @@
 This repository contains examples of the pycoalescence package described [here](https://pycoalescence.readthedocs.io) 
 in support of Thompson *et al* (2018, in prep.). Primarily, the binder jupyter notebook can be run through a browser to
 demonstrate the simulation process used in the paper for both spatially explicit neutral models and calculations of the 
-effective connectivity parameter.
-
+effective connectivity parameter. Additional simulation data and collections of maps used to generate the results can
+be found [here](doi::10.5281/zenodo.1493944).
 
 ### File overview
 
@@ -15,9 +15,7 @@ effective connectivity parameter.
 
 - **figure\_generation.R**: generate the figures shown in the main text using simulation results stored in csv files in
   *results* folder.
-  
-- **table_generation.R**: generate the summary data for the table in the main text.
-  
+    
 - **plot\_colours.R**: controls the colours and labels for the plots.
 
 - **preston.R**: contains functions for generating the analytical solutions from the Preston function.
