@@ -14,6 +14,8 @@ plot_colours <- c("#A53A2C",
 )
 percent_cover_names = c("0.1"="10% habitat cover", "0.2"="20% habitat cover",
                         "0.4"="40% habitat cover")
+percent_cover_names2 = c("0.2"="High habitat\nloss", "0.4"="Medium habitat\nloss",
+                        "0.8"="Low habitat\nloss")
 size_names = as_labeller(c("50" = "Area == 50^2",
                            "500" = "Area == 500^2", "5000" = "Area == 5000^2"), default=label_parsed)
 sigma_names = as_labeller(setNames(sapply(c(2, 4,8, 16, 32), FUN = function(x){paste("sigma == ",x)}), 
@@ -22,3 +24,6 @@ sigma_names = as_labeller(setNames(sapply(c(2, 4,8, 16, 32), FUN = function(x){p
 a_max_names <- as_labeller(c("100" = "A[max] == 100^2",
                              "1000" = "A[max] == 1000^2", "10000" = "A[max] == 10000^2"),
                            default=label_parsed)
+a_max_names_large <- as_labeller(c("10000" = "Local scale",
+                                   "1e+06" = "Intermediate scale",
+                                   "1e+08" = "Regional scale"))
