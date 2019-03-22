@@ -27,3 +27,28 @@ a_max_names <- as_labeller(c("100" = "A[max] == 100^2",
 a_max_names_large <- as_labeller(c("10000" = "Local scale",
                                    "1e+06" = "Intermediate scale",
                                    "1e+08" = "Regional scale"))
+
+
+#' Formats a label to 10^# notation
+#'
+#' @param x the numeric vector to format
+#'
+#' @return 10^# for each # in x
+scientific_10 <- function(x) {
+  p <-  parse(text=gsub("e[\\+]*", " %*% 10^", scales::scientific_format()(x)))
+  p[x ==0] <- 0
+  p[x == 1] <- 1
+  return(p)
+}
+
+#' Formats a label to 10^# notation without a 1x multiplier
+#'
+#' @param x the numeric vector to format
+#'
+#' @return 10^# for each # in x
+scientific_10_powers <- function(x) {
+  p <-  parse(text=gsub("[1]e[\\+]*", "10^", scales::scientific_format()(x)))
+  p[x ==0] <- 0
+  p[x == 1] <- 1
+  return(p)
+}

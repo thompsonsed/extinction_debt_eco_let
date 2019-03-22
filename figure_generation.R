@@ -377,7 +377,7 @@ p1 <- main_df %>% filter(sigma > 4) %>%
                 labels = scales::trans_format("log10", scales::math_format(10^.x)))+
   xlab(expression(paste("Area (", A[e], ")"))) + geom_point(aes(colour = type),
                                                                              alpha=0.4)+
-  ylab(expression(paste("Species richness (", S, ")"))) + 
+  ylab(expression(paste("Species richness (", hat(S), ")"))) + 
   scale_colour_discrete("Landscape type")+
   scale_shape_discrete(expression(sigma))+
   guides(colour = guide_legend(override.aes = list(alpha = 1),
@@ -398,7 +398,7 @@ p2 <- main_df %>% filter(sigma > 4) %>%
                 labels = scales::trans_format("log10", scales::math_format(10^.x)))+
   xlab(expression(paste("Rescaled area (",A[e] / c[e]^2, ")"))) + geom_point(aes(colour = type),
                                                                              alpha=0.4)+
-  ylab(expression(paste("Rescaled species richness (", S/c[e]^2, ")"))) + 
+  ylab(expression(paste("Rescaled species richness (", hat(S)/c[e]^2, ")"))) + 
   scale_colour_discrete("Landscape type")+
   scale_shape_discrete(expression(sigma))+
   guides(colour = guide_legend(override.aes = list(alpha = 1),
@@ -642,7 +642,7 @@ p1 <- main_df %>% filter(sigma > 4) %>%
                 labels = scales::trans_format("log10", scales::math_format(10^.x)))+
   xlab(expression(paste("Area (", A[e], ")"))) +
   geom_point(aes(colour = type, shape=as.factor(sigma)), alpha=0.4)+
-  ylab(expression(paste("Species richness (", S, ")"))) + 
+  ylab(expression(paste("Species richness (", hat(S), ")"))) + 
   scale_colour_discrete("Landscape type")+
   scale_shape_discrete(expression(sigma))+
   guides(colour = guide_legend(title.position="top", title.hjust = 0.5, override.aes = list(alpha = 1)),
@@ -660,7 +660,7 @@ p2 <-main_df %>% filter(sigma > 4) %>% ggplot()+
                  colour = type,
                  shape=as.factor(sigma)),alpha=0.4)+
   xlab(expression(paste("Scaled area (", A[e]/sigma^2, ")"))) + 
-  ylab(expression(paste("Scaled species richness (", S/sigma^2, ")"))) +
+  ylab(expression(paste("Scaled species richness (", hat(S)/sigma^2, ")"))) +
   scale_colour_discrete("Landscape type", 
                         labels=c( "Random","Clustered", "Real", "Contiguous"))+
   guides(colour = guide_legend(override.aes = list(alpha = 1)),
@@ -680,7 +680,7 @@ p3 <- main_df %>% filter(sigma > 4) %>% ggplot()+
                  colour = type,
                  shape=as.factor(sigma)),alpha=0.4)+
   xlab(expression(paste("Scaled area (", A[e]/omega^2, ")"))) + 
-  ylab(expression(paste("Scaled species richness (", S/omega^2, ")"))) + 
+  ylab(expression(paste("Scaled species richness (", hat(S)/omega^2, ")"))) + 
   scale_colour_discrete("Landscape type", 
                         labels=c( "Random","Clustered", "Real", "Contiguous"))+
   scale_shape_discrete(expression(sigma)) + 
@@ -698,7 +698,7 @@ p4 <- main_df %>% filter(sigma > 4) %>% ggplot()+
                  colour = type,
                  shape=as.factor(sigma)),alpha=0.4)+
   xlab(expression(paste("Scaled area (", A[e]/c[e]^2, ")"))) + 
-  ylab(expression(paste("Scaled species richness (", S/c[e]^2, ")"))) + 
+  ylab(expression(paste("Scaled species richness (", hat(S)/c[e]^2, ")"))) + 
   scale_colour_discrete("Landscape type", 
                         labels=c( "Random","Clustered", "Real", "Contiguous"))+
   scale_shape_discrete(expression(sigma)) + 
@@ -733,8 +733,10 @@ p <- ggplot(main_df %>% filter(type!="Contiguous", sigma > 4)) +
              aes(x=preston_richness, y=richness, colour=area), alpha=0.7)+
   geom_abline(intercept = 0, slope = 1, linetype="dotted", colour="grey")+
   theme_classic() + 
-  scale_x_log10(expression("Theoretical richness (" ~ Psi ~ ")")) +
-  scale_y_log10("Simulated richness") +
+  scale_x_log10(expression("Theoretical richness (" ~ Psi ~ ")"),
+                breaks=c(10, 10^3, 10^5)) +
+  scale_y_log10("Simulated richness",
+                breaks=c(10, 10^3, 10^5)) +
   facet_grid(.~type) + 
   scale_colour_viridis("Area", trans="log10", option="magma",
                        breaks = scales::trans_breaks("log10", function(x) 10^x, n=3),

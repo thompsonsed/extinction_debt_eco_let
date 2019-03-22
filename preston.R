@@ -1,6 +1,7 @@
 # Preston function and related solutions
 library(Bessel)
 
+
 # The Preston Function
 
 #' Preston function for approximating species richness from a spatially explicit neutral model under
