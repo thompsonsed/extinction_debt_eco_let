@@ -359,7 +359,7 @@ gga3 <- ggarrange(gga2, gga2b, nrow=1, ncol=2,
 gga4 <- ggarrange(gga1, gga3, nrow=1, ncol=2,
                   widths=c(0.40, 1))
 gga5 <- ggarrange(gga4, l, nrow=2, ncol=1, heights=c(1, 0.1))
-pdf(file.path(figure_dir, "figure1.pdf"), 4.3, 6)
+pdf(file.path(figure_dir, "figure1.pdf"), 4.3, 6, useDingbats = FALSE)
 print(gga5)
 dev.off()
 
@@ -413,7 +413,7 @@ p2 <- main_df %>% filter(sigma > 4) %>%
   ggtitle("Rescaled species-area curve")
 gga2 <- ggarrange(p1, p2, common.legend = TRUE, legend="bottom", nrow = 2, ncol=1,
                  labels = c("a)", "b)"), heights = c(0.95, 1.0))
-pdf(file.path(figure_dir, "figure2.pdf"), 3.23, 7)
+pdf(file.path(figure_dir, "figure2.pdf"), 3.23, 7, useDingbats = FALSE)
 print(gga2)
 dev.off()
 ggthemr_reset()
@@ -457,7 +457,7 @@ p <- ggplot(analytical_approx_ED, colour="black") + theme_classic() +
   theme(legend.key.height=unit(2,"line")) + 
   theme(legend.key.width=unit(2,"line")) + 
   theme(aspect.ratio=1)
-pdf(file.path(figure_dir, "figure3.pdf"), 6.7, 5)
+pdf(file.path(figure_dir, "figure3.pdf"), 6.7, 5, useDingbats = FALSE)
 print(p)
 dev.off()
 
@@ -498,7 +498,7 @@ px <- ggplot(variable_size_data, colour="black") +
   theme( aspect.ratio = 1, legend.position = "left",
          legend.text=element_text(size=9),
          legend.title=element_text(size=10))
-pdf(file.path(figure_dir, "figure4.pdf"), 5.57, 4)
+pdf(file.path(figure_dir, "figure4.pdf"), 5.57, 4, useDingbats = FALSE)
 print(px)
 dev.off()
 ############
@@ -524,7 +524,7 @@ p5 <- ggplot(table_df) + geom_tile(aes(fill=100*proportion_richness, y=fragmenta
         axis.ticks=element_blank(),
         axis.line=element_blank(),
         strip.background = element_blank())
-pdf(file.path(figure_dir, "figure5.pdf"), 6.81, 6)
+pdf(file.path(figure_dir, "figure5.pdf"), 6.81, 6, useDingbats = FALSE)
 print(p5)
 dev.off()
 
@@ -596,7 +596,7 @@ p2 <- analytical_approx_best_case %>% filter(speciation_rate == 10^-6) %>%
 
 gga1 <- ggarrange(p1, p2, labels = c("a)",
                                      "b)"), ncol=1, nrow=2)
-pdf(file.path(figure_dir, "figure6.pdf"), 3.23, 7.0)
+pdf(file.path(figure_dir, "figure6.pdf"), 3.23, 7.0, useDingbats = FALSE)
 print(gga1)
 dev.off()
 ggthemr_reset()
@@ -626,7 +626,7 @@ p <- main_df %>% filter(type=="Random" | type == "Contiguous", sigma>2) %>%
                 mutate(scaled_sigma = sqrt(area/a_max)*sigma),
               fill=NA,linetype="dotted", colour="grey")+
   scale_shape_discrete("Percentage\ncover")
-pdf(file.path(figure_dir, "appendices", "appendix3_s1.pdf"), 6, 4)
+pdf(file.path(figure_dir, "appendices", "appendix3_s1.pdf"), 6, 4, useDingbats = FALSE)
 print(p)
 dev.off()
 
@@ -708,7 +708,7 @@ p4 <- main_df %>% filter(sigma > 4) %>% ggplot()+
          shape = guide_legend(title.position="top", title.hjust = 0.5, override.aes = list(alpha = 1)))
 gga <- ggarrange(p1, p2, p3, p4, common.legend = TRUE, legend="bottom", nrow = 2, ncol=2,
                  labels = c("a)", "b)", "c)", "d)"), heights = c(0.95, 1.0), widths=c(0.92, 1.0))
-pdf(file.path(figure_dir, "appendices", "appendix3_s2.pdf"), 6.7, 7.5)
+pdf(file.path(figure_dir, "appendices", "appendix3_s2.pdf"), 6.7, 7.5, useDingbats = FALSE)
 print(gga)
 dev.off()
 ggthemr_reset()
@@ -743,7 +743,7 @@ p <- ggplot(main_df %>% filter(type!="Contiguous", sigma > 4)) +
             aes(x = 50, y = 10000, label = str_mape, group=type),
             parse=TRUE, inherit.aes = FALSE, colour="black") + 
   theme(aspect.ratio = 1)
-pdf(file.path(figure_dir, "appendices", "appendix3_s3.pdf"), 6.7, 3)    
+pdf(file.path(figure_dir, "appendices", "appendix3_s3.pdf"), 6.7, 3, useDingbats = FALSE)    
 print(p)
 dev.off()
 
@@ -808,7 +808,7 @@ p <- dummy_df %>% filter(speciation_rate == 1e-5) %>% ggplot(aes(x=sigma)) +
   theme(legend.key.height=unit(2,"line")) + 
   theme(legend.key.width=unit(2,"line"))
 
-pdf(file.path(figure_dir, "appendices", "appendix4_s4.pdf"), 7, 5)
+pdf(file.path(figure_dir, "appendices", "appendix4_s4.pdf"), 7, 5, useDingbats = FALSE)
 print(p)
 dev.off()
 
@@ -849,6 +849,6 @@ p <- dummy_df %>% filter(sigma == 16, speciation_rate >= 10^-9) %>% ggplot() +
   theme(legend.key.height=unit(2,"line")) + 
   theme(legend.key.width=unit(2,"line"))
 
-pdf(file.path(figure_dir, "appendices", "appendix4_s5.pdf"), 7, 5)
+pdf(file.path(figure_dir, "appendices", "appendix4_s5.pdf"), 7, 5, useDingbats = FALSE)
 print(p)
 dev.off()
