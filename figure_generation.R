@@ -416,9 +416,14 @@ gga2 <- ggarrange(p1, p2, common.legend = TRUE, legend="bottom", nrow = 2, ncol=
 pdf(file.path(figure_dir, "figure2.pdf"), 3.23, 7, useDingbats = FALSE)
 print(gga2)
 dev.off()
+
+# Second version in alternative orientation
+gga3 <- ggarrange(p1, p2, common.legend = TRUE, legend="bottom", nrow = 1, ncol=2,
+                  labels = c("a)", "b)"))
+pdf(file.path(figure_dir, "figure2_alt.pdf"), 6.5, 4, useDingbats = FALSE)
+print(gga3)
+dev.off()
 ggthemr_reset()
-
-
 ############
 # Figure 3 #
 ############
