@@ -506,6 +506,10 @@ px <- ggplot(variable_size_data, colour="black") +
 pdf(file.path(figure_dir, "figure4.pdf"), 5.57, 4, useDingbats = FALSE)
 print(px)
 dev.off()
+# Plot alternative fig 4
+pdf(file.path(figure_dir, "figure4_alt.pdf"), 6.5, 4, useDingbats = FALSE)
+print(px + theme(legend.position = "right"))
+dev.off()
 ############
 # Figure 5 #
 ############
@@ -681,7 +685,7 @@ p3 <- main_df %>% filter(sigma > 4) %>% ggplot()+
   scale_y_log10(breaks = scales::trans_breaks("log10", function(x) 10^x, n=4),
                 labels = scales::trans_format("log10", scales::math_format(10^.x)))+
   geom_point(aes(y = richness/(proportion_cover * sigma^2),
-                 x = area/sigma^2,
+                 x = area/(proportion_cover * sigma^2),
                  colour = type,
                  shape=as.factor(sigma)),alpha=0.4)+
   xlab(expression(paste("Scaled area (", A[e]/omega^2, ")"))) + 
