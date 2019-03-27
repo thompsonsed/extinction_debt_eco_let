@@ -553,7 +553,7 @@ p1 <- analytical_approx_best_case %>%
                       labels=c(expression(z == 0.1, z == 0.2, z == 0.3),
                                "Long-term\n(best case)"), 
                       values=c(ggthemr_light_colours[1], ggthemr_light_colours[3], 
-                               ggthemr_light_colours[5], plot_colours[9]))+
+                               ggthemr_light_colours[6], plot_colours[9]))+
   scale_linetype_manual(element_blank(), breaks=c(0.1, 0.2, 0.3, "Long-term\n(best case)"),
                         labels=c(expression(z == 0.1, z == 0.2, z == 0.3),
                                  "Long-term\n(best case)"), 
@@ -582,7 +582,7 @@ p2 <- analytical_approx_best_case %>% filter(speciation_rate == 10^-6) %>%
   scale_linetype_manual(element_blank(),
                           breaks=c("Short-term\n(best case)", "Short-term\n(worst case)",
                                    "Long-term\n(best case)"),
-                        values=c("Short-term\n(best case)"="solid",
+                        values=c("Short-term\n(best case)"="dotdash",
                                  "Short-term\n(worst case)"="dashed", 
                                  "Long-term\n(best case)"="dotted"))+
   scale_colour_manual(element_blank(),
@@ -607,6 +607,12 @@ gga1 <- ggarrange(p1, p2, labels = c("a)",
                                      "b)"), ncol=1, nrow=2)
 pdf(file.path(figure_dir, "figure6.pdf"), 3.23, 7.0, useDingbats = FALSE)
 print(gga1)
+dev.off()
+# Alternative arrangement of plots
+gga2 <- ggarrange(p1, p2, labels = c("a)",
+                                     "b)"), ncol=2, nrow=1)
+pdf(file.path(figure_dir, "figure6_alt.pdf"), 6.5, 3.5, useDingbats = FALSE)
+print(gga2)
 dev.off()
 ggthemr_reset()
 ################
