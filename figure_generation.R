@@ -132,7 +132,8 @@ main_df <- main_df %>% filter(proportion_cover != 0.5, proportion_cover != 0.25)
 #################
 
 # Calculate the analytical approximations of extinction debt
-analytical_approx_ED <- expand.grid(proportion_cover=c(0.1, 0.2, 0.4), sigma=c(8, 16, 32), 
+analytical_approx_ED <- expand.grid(proportion_cover=c(0.1, 0.2, 0.4, 0.5, 0.7, 0.9),
+                                    sigma=c(8, 16, 32), 
                           a_max=10^seq(1, 9, 0.1)) %>% 
   mutate(area = proportion_cover * a_max,
          s_inst_lower = S_contig(area, 0.0001, sigma_sq = sigma^2),
@@ -240,7 +241,9 @@ table_df <- read.csv(file.path("results", "dispersal_ranges.csv")) %>% select(-X
 # Data-Figure 6 #
 #################
 
-zeroes_df <- data.frame(expand.grid(area=0.0, speciation_rate=c(1e-8, 1e-6, 1e-4))) %>%
+zeroes_df <- data.frame(expand.grid(area=0.0, speciation_rate=c(1e-12,
+                                                                1e-8, 1e-7,
+                                                                6e-6, 1e-4))) %>%
   mutate(prop_cover =0.0,
          sigma=16, a_max=1000^2,
          z = ifelse(speciation_rate == 1e-8, 0.1, ifelse(speciation_rate == 1e-6, 0.2, 0.3)),
@@ -255,10 +258,12 @@ zeroes_df <- data.frame(expand.grid(area=0.0, speciation_rate=c(1e-8, 1e-6, 1e-4
          best_case_pc = 0.0)
 
 analytical_approx_best_case <- data.frame(expand.grid(prop_cover=seq(0.01, 0.99, 0.001),
-                                                      speciation_rate=c(1e-8, 1e-6, 1e-4),
-                                                      sigma=16, a_max=1000^2)) %>%
+                                                      speciation_rate=c(1e-12, 1e-8, 1e-7,
+                                                                        6e-6, 1e-4),
+                                                      sigma=8.5, a_max=10*42000)) %>%
   mutate(area=a_max * prop_cover,
-         z = ifelse(speciation_rate == 1e-8, 0.1, ifelse(speciation_rate == 1e-6, 0.2, 0.3)),
+         z = ifelse(speciation_rate == 1e-12, 0.1,
+                    ifelse(speciation_rate == 6e-6, 0.2, 0.3)),
          a_max_str = as.character(sqrt(a_max)),
          pc_cover_str = as.character(prop_cover),
          best_case_richness = S_random_equilibrium(a_max, area, speciation_rate, sigma^2),
@@ -269,6 +274,18 @@ analytical_approx_best_case <- data.frame(expand.grid(prop_cover=seq(0.01, 0.99,
          power_law_est = 100*power_law_estimation(a_max, area, z),
          best_case_pc = 100*best_case_richness/contig_richness) %>%
   rbind(zeroes_df)
+
+ed_regional_examples <- read.csv(file.path("results", "ed_regional_examples.csv")) %>% 
+  mutate(a_max = a_max * 32,
+         a_actual = 10*42000,
+         proportion_habitat = effective_area/a_max,
+         sigma = sigma * sqrt(32),
+         sigma_e = sqrt(32) * estimate_sigma_rayleigh(distance = mean_distance, n_steps = 1000000),
+         contig_richness = S_contig(a_actual, nu = 6e-6, sigma_sq = sigma^2),
+         preston_richness = S_random_equilibrium(A_max = a_actual, A = proportion_habitat*a_actual,
+                                                 nu=6e-6, sigma_sq = sigma_e^2),
+         proportion_richness = preston_richness/contig_richness,
+         short_label = c("Alt", "Ari", "Elc", "Mar", "Rio"))
 ###############
 ## Main text ##
 ###############
@@ -370,9 +387,10 @@ ggthemr("light")
 
 p1 <- main_df %>% filter(sigma > 4) %>% 
   ggplot(aes(x=area,
-             y=richness))+
-  theme_classic() + scale_x_log10(breaks = scales::trans_breaks("log10", function(x) 10^x),
-                                  labels = scales::trans_format("log10", scales::math_format(10^.x))) +
+             y=richness, shape=as.factor(sigma)))+
+  theme_classic() + 
+  scale_x_log10(breaks = scales::trans_breaks("log10", function(x) 10^x),
+                labels = scales::trans_format("log10", scales::math_format(10^.x))) +
   scale_y_log10(breaks = scales::trans_breaks("log10", function(x) 10^x),
                 labels = scales::trans_format("log10", scales::math_format(10^.x)))+
   xlab(expression(paste("Area (", A[e], ")"))) + geom_point(aes(colour = type),
@@ -391,7 +409,7 @@ p1 <- main_df %>% filter(sigma > 4) %>%
   ggtitle("Unscaled species-area curve")
 p2 <- main_df %>% filter(sigma > 4) %>% 
   ggplot(aes(x=area/effective_connectivity^2,
-             y=richness/effective_connectivity^2))+
+             y=richness/effective_connectivity^2, shape=as.factor(sigma)))+
   theme_classic() + scale_x_log10(breaks = scales::trans_breaks("log10", function(x) 10^x),
                                   labels = scales::trans_format("log10", scales::math_format(10^.x))) +
   scale_y_log10(breaks = scales::trans_breaks("log10", function(x) 10^x),
@@ -427,7 +445,8 @@ ggthemr_reset()
 ############
 # Figure 3 #
 ############
-p <- ggplot(analytical_approx_ED, colour="black") + theme_classic() + 
+p <- analytical_approx_ED %>%  filter(proportion_cover %in% c(0.1, 0.2, 0.4)) %>% 
+  ggplot(colour="black") + theme_classic() + 
   geom_ribbon(aes(x=a_max, ymin=max_pc_inst, ymax=100,
                   fill="Definite Immediate loss")) +
   geom_ribbon(aes(x=a_max, ymin=min_pc_inst, ymax=max_pc_inst,
@@ -569,8 +588,8 @@ p1 <- analytical_approx_best_case %>%
         legend.text = element_text(size=8),
         plot.title = element_text(size=10)) + 
   ggtitle("Power law approach vs\nlong-term Preston function (best case)")
-
-p2 <- analytical_approx_best_case %>% filter(speciation_rate == 10^-6) %>%
+p1
+p2 <- analytical_approx_best_case %>% filter(speciation_rate == 6^-6) %>%
   ggplot() + 
   geom_line(aes(x=prop_cover*100, y=best_case_instant,
                   linetype="Short-term\n(best case)", colour="Short-term\n(best case)")) +
@@ -602,7 +621,7 @@ p2 <- analytical_approx_best_case %>% filter(speciation_rate == 10^-6) %>%
         legend.title = element_text(size=10),
         legend.text = element_text(size=8)) + 
   ggtitle("Short-term Preston function vs\nlong-term Preston function (best case)")
-
+p2
 gga1 <- ggarrange(p1, p2, labels = c("a)",
                                      "b)"), ncol=1, nrow=2)
 pdf(file.path(figure_dir, "figure6.pdf"), 3.23, 7.0, useDingbats = FALSE)
@@ -615,10 +634,139 @@ pdf(file.path(figure_dir, "figure6_alt.pdf"), 6.5, 3.5, useDingbats = FALSE)
 print(gga2)
 dev.off()
 ggthemr_reset()
+
+
+# Combined version of the figures
+
+p_combined <- analytical_approx_best_case %>% ungroup() %>% 
+  group_by(prop_cover) %>% 
+  mutate(power_law_min = min(power_law_est), 
+         power_law_max = max(power_law_est)) %>% 
+  filter(speciation_rate == 6e-6) %>% 
+  select(prop_cover, best_case_instant, worst_case_instant, power_law_min, power_law_max) %>% 
+  distinct() %>% 
+  ggplot() + 
+    geom_ribbon(aes(x=prop_cover * 100,
+                    ymin=worst_case_instant, ymax=best_case_instant,
+                    fill="Our approach:\n(after immediate loss)"), alpha=0.5) +
+    geom_ribbon(aes(x=prop_cover * 100,
+                    ymin=power_law_min,
+                    ymax=power_law_max,
+                    fill="Power-law SAR\n(0.1 <= z <= 0.3)"), alpha=0.5)+
+  geom_ribbon(aes(x=prop_cover * 100,
+                  ymin=0,
+                  ymax=prop_cover*100,
+                  fill="Our approach:\n(after extinction debt)"), alpha=0.5)+
+    # geom_segment(aes(x=0, y=0, xend=100, yend=100,
+    #                 linetype="Our approach:\nlong-term",
+    #                 colour="Our approach:\nlong-term"))+
+  theme_classic()+
+
+  # scale_colour_manual(element_blank(), 
+  #                     breaks=c("Our approach:\nlong-term (best case)"),
+  #                     values=c(plot_colours[9]))+
+  # scale_linetype_manual(element_blank(), 
+  #                     breaks=c("Our approach:\nlong-term (best case)"),
+  #                     values=c("dotted"))+
+  scale_fill_manual(element_blank(), 
+                      breaks=c( "Power-law SAR\n(0.1 <= z <= 0.3)",
+                                "Our approach\n(after immediate loss)",
+                                "Our approach:\n(after extinction debt)"),
+                      values=c(plot_colours[9],  plot_colours[3], ggthemr_light_colours[1]))+
+  
+  # values=c("Definite Immediate loss"=plot_colours[1],
+  #          "Possible Immediate loss"=plot_colours[3],
+  #          "Definite long-term loss"=plot_colours[7],
+  #          "Possible remaining"=plot_colours[9],
+  #          "Definite remaining"=plot_colours[11]))+
+  geom_point(data=ed_regional_examples, aes(x=proportion_habitat*100, 
+                                            y=proportion_richness*100,
+                                            shape="Our approach\n(empirical examples)"),
+             colour="black") +
+  geom_text_repel(data=ed_regional_examples, 
+            aes(x=proportion_habitat*100, y=proportion_richness*100, label=short_label),
+            nudge_y = -3, colour="black")+
+  guides(linetype = guide_legend(order=2),
+         fill = guide_legend(order=1),
+         colour=guide_legend(order=2))+
+  # scale_linetype_manual(element_blank(), breaks=c(0.1, 0.2, 0.3, "Long-term\n(best case)"),
+  #                       labels=c(expression(z == 0.1, z == 0.2, z == 0.3),
+  #                                "Long-term\n(best case)"), 
+  #                       values=c("solid", "solid", "solid", "dotted"))+
+  xlab("Percentage of habitat remaining")+
+  ylab("Percentage of species richness")+
+  ylim(c(0, 100))+
+  scale_shape_discrete(element_blank())+
+  theme(plot.title = element_text(size=10),
+        legend.margin = margin(-0.25, 0.5, 0.25, 0.5, unit = "lines"),
+        legend.position = c(0.75, 0.75),
+        legend.background = element_rect(size = 0.5, colour = 1),
+        legend.title = element_text(size=10),
+        legend.text = element_text(size=8))
+  # ggtitle("Power law approach vs\nlong-term Preston function (best case)")
+
+pdf(file.path(figure_dir, "figure6_combined.pdf"), 4.3, 4, useDingbats = FALSE)
+print(p_combined)
+dev.off()
+
+# tropical forest trees
+rho = 42000 # km^-2 
+sigma = 0.0402 # km
+epsilon_lo = .Machine$double.xmin
+epsilon_hi = .Machine$double.neg.eps
+A_max = 100
+S_max = 1000
+temp = uniroot(function(log_nu_est)S_contig(A_max*rho,exp(log_nu_est),sigma^2*rho)- 
+                 S_max,lower=log(epsilon_lo),upper=log(1-epsilon_hi))
+nu = exp(temp$root)
+nu
+A_max = 0.5
+S_max = 222
+temp = uniroot(function(log_nu_est)S_contig(A_max*rho,exp(log_nu_est),sigma^2*rho)- 
+                 S_max,lower=log(epsilon_lo),upper=log(1-epsilon_hi))
+nu = exp(temp$root)
+
+A_max = 540
+S_max = 840+89
+temp = uniroot(function(log_nu_est)S_contig(A_max*rho,exp(log_nu_est),sigma^2*rho)- 
+                 S_max,lower=log(epsilon_lo),upper=log(1-epsilon_hi))
+nu = exp(temp$root)
+
 ################
 ## Appendices ##
 ################
 
+##############
+# Appendix 2 #
+##############
+preston_df <- expand.grid(area=10^seq(1, 10, 0.001), 
+                          speciation_rate = c(0.0001, 0.00001, 0.00000001), sigma=c(8, 16, 32)) %>% 
+  mutate(richness = S_contig(A = area, nu = speciation_rate, sigma_sq = sigma^2))
+
+sar_df <- expand.grid(area=10^seq(1, 10, 0.001), c=100) %>% 
+  mutate(min_richness = power_law_model(area, c, 0.1),
+         max_richness = power_law_model(area, c, 0.3))
+
+p <- preston_df %>% ggplot() + 
+  geom_ribbon(data=sar_df, 
+              aes(x=area, ymin=min_richness, ymax=max_richness,
+                  fill="Power-law\nSAR"), alpha=0.6, 
+              colour=NA) + 
+  geom_line(aes(x=area, y=richness, 
+                linetype = as.factor(speciation_rate), 
+                colour=as.factor(sigma)))+
+  scale_colour_viridis(expression(paste(sigma)), 
+                       discrete=TRUE, option="plasma", end=0.9)+
+  guides(linetype = guide_legend(override.aes = list(colour = "black")))+
+  scale_linetype_discrete("Speciation\nrate")+
+  scale_fill_manual("", values = c("grey50"))+
+  scale_x_log10("Species richness")+
+  scale_y_log10("Area")+
+  theme_classic()
+  
+pdf(file.path(figure_dir, "appendices", "appendix2_s0.pdf"), 6, 4, useDingbats = FALSE)
+print(p)
+dev.off()
 ##############
 # Appendix 3 #
 ##############
@@ -768,6 +916,46 @@ dev.off()
 # Appendix 4 #
 ##############
 
+
+p <- analytical_approx_ED %>%  filter(proportion_cover %in% c(0.5, 0.7, 0.9)) %>% 
+  ggplot(colour="black") + theme_classic() + 
+  geom_ribbon(aes(x=a_max, ymin=max_pc_inst, ymax=100,
+                  fill="Definite Immediate loss")) +
+  geom_ribbon(aes(x=a_max, ymin=min_pc_inst, ymax=max_pc_inst,
+                  fill="Possible Immediate loss")) +
+  geom_ribbon(aes(x=a_max, ymin=max_pc_equilibrium, ymax=min_pc_inst,
+                  fill="Definite long-term loss")) +
+  geom_ribbon(aes(x=a_max, ymin=min_pc_equilibrium, ymax=max_pc_equilibrium,
+                  fill="Possible remaining")) +
+  geom_ribbon(aes(x=a_max, ymin=0, ymax=min_pc_equilibrium,
+                  fill="Definite remaining")) +
+  ylab("Percentage of species richness")+
+  scale_x_log10(expression(paste("Total area (", A[max], ")")),limits=c(10^3, 10^9),
+                breaks = scales::trans_breaks("log10", function(x) 10^x, n=4),
+                labels = scales::trans_format("log10", scales::math_format(10^.x)))+
+  scale_fill_manual("Scenario", labels=c("Immediate loss",
+                                         "Immediate loss\nor extinction debt",
+                                         "Extinction debt",
+                                         "Remaining or\nextinction debt",
+                                         "Remaining"),
+                    breaks=c("Definite Immediate loss",
+                             "Possible Immediate loss",
+                             "Definite long-term loss",
+                             "Possible remaining",
+                             "Definite remaining"),
+                    values=c("Definite Immediate loss"=plot_colours[1],
+                             "Possible Immediate loss"=plot_colours[3],
+                             "Definite long-term loss"=plot_colours[7],
+                             "Possible remaining"=plot_colours[9],
+                             "Definite remaining"=plot_colours[11]))+
+  facet_grid(sigma~proportion_cover, labeller = labeller(proportion_cover=percent_cover_names,
+                                                         sigma=sigma_names)) + 
+  theme(legend.key.height=unit(2,"line")) + 
+  theme(legend.key.width=unit(2,"line")) + 
+  theme(aspect.ratio=1)
+pdf(file.path(figure_dir, "appendices", "appendix4_s3.5.pdf"), 6.7, 5, useDingbats = FALSE)
+print(p)
+dev.off()
 # Create dummy data for plotting speciation rate and sigma vs percent remaining
 dummy_df <- data.frame(expand.grid(speciation_rate=10^seq(-10, -4, 0.1), proportion_cover=c(0.1, 0.2, 0.4), 
                                    a_max=c(100^2, 1000^2, 10000^2), sigma=2^seq(2, 5, 0.5))) %>%

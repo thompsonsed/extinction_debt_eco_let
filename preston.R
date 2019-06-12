@@ -72,9 +72,15 @@ estimate_sigma_rayleigh <- function(distance, n_steps)
   return((distance) * (2/(pi* n_steps))^0.5)
 }
 
-#' Predits the number of species remaining from a simple power-law species-area curve
+#' Predits the proportion of species remaining from a simple power-law species-area curve
 #' 
 power_law_estimation <- function(A_max, A, z)
 {
   return((A/A_max)^z)
+}
+
+#' Generates the SAR from a simple power-law approach
+power_law_model <- function(A, c, z)
+{
+  return(c*A^z)
 }

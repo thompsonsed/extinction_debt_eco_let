@@ -13,7 +13,8 @@ plot_colours <- c("#A53A2C",
                   "#5C4DBC"
 )
 percent_cover_names = c("0.1"="10% habitat cover", "0.2"="20% habitat cover",
-                        "0.4"="40% habitat cover")
+                        "0.4"="40% habitat cover", "0.5"="50% habitat cover",
+                        "0.7"="70% habitat cover", "0.9"="90% habitat cover")
 percent_cover_names2 = c("0.2"="High habitat\nloss", "0.4"="Medium habitat\nloss",
                         "0.8"="Low habitat\nloss")
 size_names = as_labeller(c("50" = "Area == 50^2",
