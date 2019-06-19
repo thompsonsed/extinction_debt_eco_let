@@ -648,7 +648,7 @@ p_combined <- analytical_approx_best_case %>% ungroup() %>%
   ggplot() + 
     geom_ribbon(aes(x=prop_cover * 100,
                     ymin=worst_case_instant, ymax=best_case_instant,
-                    fill="Our approach:\n(after immediate loss)"), alpha=0.5) +
+                    fill="Our approach\n(after immediate loss)"), alpha=0.5) +
     geom_ribbon(aes(x=prop_cover * 100,
                     ymin=power_law_min,
                     ymax=power_law_max,
@@ -656,29 +656,13 @@ p_combined <- analytical_approx_best_case %>% ungroup() %>%
   geom_ribbon(aes(x=prop_cover * 100,
                   ymin=0,
                   ymax=prop_cover*100,
-                  fill="Our approach:\n(after extinction debt)"), alpha=0.5)+
-    # geom_segment(aes(x=0, y=0, xend=100, yend=100,
-    #                 linetype="Our approach:\nlong-term",
-    #                 colour="Our approach:\nlong-term"))+
+                  fill="Our approach\n(after extinction debt)"), alpha=0.5)+
   theme_classic()+
-
-  # scale_colour_manual(element_blank(), 
-  #                     breaks=c("Our approach:\nlong-term (best case)"),
-  #                     values=c(plot_colours[9]))+
-  # scale_linetype_manual(element_blank(), 
-  #                     breaks=c("Our approach:\nlong-term (best case)"),
-  #                     values=c("dotted"))+
   scale_fill_manual(element_blank(), 
                       breaks=c( "Power-law SAR\n(0.1 <= z <= 0.3)",
                                 "Our approach\n(after immediate loss)",
-                                "Our approach:\n(after extinction debt)"),
+                                "Our approach\n(after extinction debt)"),
                       values=c(plot_colours[9],  plot_colours[3], ggthemr_light_colours[1]))+
-  
-  # values=c("Definite Immediate loss"=plot_colours[1],
-  #          "Possible Immediate loss"=plot_colours[3],
-  #          "Definite long-term loss"=plot_colours[7],
-  #          "Possible remaining"=plot_colours[9],
-  #          "Definite remaining"=plot_colours[11]))+
   geom_point(data=ed_regional_examples, aes(x=proportion_habitat*100, 
                                             y=proportion_richness*100,
                                             shape="Our approach\n(empirical examples)"),
@@ -689,48 +673,43 @@ p_combined <- analytical_approx_best_case %>% ungroup() %>%
   guides(linetype = guide_legend(order=2),
          fill = guide_legend(order=1),
          colour=guide_legend(order=2))+
-  # scale_linetype_manual(element_blank(), breaks=c(0.1, 0.2, 0.3, "Long-term\n(best case)"),
-  #                       labels=c(expression(z == 0.1, z == 0.2, z == 0.3),
-  #                                "Long-term\n(best case)"), 
-  #                       values=c("solid", "solid", "solid", "dotted"))+
   xlab("Percentage of habitat remaining")+
   ylab("Percentage of species richness")+
   ylim(c(0, 100))+
   scale_shape_discrete(element_blank())+
   theme(plot.title = element_text(size=10),
         legend.margin = margin(-0.25, 0.5, 0.25, 0.5, unit = "lines"),
-        legend.position = c(0.75, 0.75),
+        legend.position = c(0.75, 0.6),
         legend.background = element_rect(size = 0.5, colour = 1),
         legend.title = element_text(size=10),
         legend.text = element_text(size=8))
-  # ggtitle("Power law approach vs\nlong-term Preston function (best case)")
 
 pdf(file.path(figure_dir, "figure6_combined.pdf"), 4.3, 4, useDingbats = FALSE)
 print(p_combined)
 dev.off()
 
-# tropical forest trees
-rho = 42000 # km^-2 
-sigma = 0.0402 # km
-epsilon_lo = .Machine$double.xmin
-epsilon_hi = .Machine$double.neg.eps
-A_max = 100
-S_max = 1000
-temp = uniroot(function(log_nu_est)S_contig(A_max*rho,exp(log_nu_est),sigma^2*rho)- 
-                 S_max,lower=log(epsilon_lo),upper=log(1-epsilon_hi))
-nu = exp(temp$root)
-nu
-A_max = 0.5
-S_max = 222
-temp = uniroot(function(log_nu_est)S_contig(A_max*rho,exp(log_nu_est),sigma^2*rho)- 
-                 S_max,lower=log(epsilon_lo),upper=log(1-epsilon_hi))
-nu = exp(temp$root)
-
-A_max = 540
-S_max = 840+89
-temp = uniroot(function(log_nu_est)S_contig(A_max*rho,exp(log_nu_est),sigma^2*rho)- 
-                 S_max,lower=log(epsilon_lo),upper=log(1-epsilon_hi))
-nu = exp(temp$root)
+# Calculations for tropical forest trees
+# rho = 42000 # km^-2 
+# sigma = 0.0402 # km
+# epsilon_lo = .Machine$double.xmin
+# epsilon_hi = .Machine$double.neg.eps
+# A_max = 100
+# S_max = 1000
+# temp = uniroot(function(log_nu_est)S_contig(A_max*rho,exp(log_nu_est),sigma^2*rho)- 
+#                  S_max,lower=log(epsilon_lo),upper=log(1-epsilon_hi))
+# nu = exp(temp$root)
+# nu
+# A_max = 0.5
+# S_max = 222
+# temp = uniroot(function(log_nu_est)S_contig(A_max*rho,exp(log_nu_est),sigma^2*rho)- 
+#                  S_max,lower=log(epsilon_lo),upper=log(1-epsilon_hi))
+# nu = exp(temp$root)
+# 
+# A_max = 540
+# S_max = 840+89
+# temp = uniroot(function(log_nu_est)S_contig(A_max*rho,exp(log_nu_est),sigma^2*rho)- 
+#                  S_max,lower=log(epsilon_lo),upper=log(1-epsilon_hi))
+# nu = exp(temp$root)
 
 ################
 ## Appendices ##
