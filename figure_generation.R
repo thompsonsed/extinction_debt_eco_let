@@ -8,6 +8,7 @@ library(ggpubr)
 # Install ggthemr with devtools::install_github('cttobin/ggthemr') - requires devtools package
 library(magick) # Required for cowplot to plot images
 library(ggthemr)
+library(ggrepel)
 source("preston.R")
 source("plot_colours.R")
 ##################
@@ -588,8 +589,8 @@ p1 <- analytical_approx_best_case %>%
         legend.text = element_text(size=8),
         plot.title = element_text(size=10)) + 
   ggtitle("Power law approach vs\nlong-term Preston function (best case)")
-p1
-p2 <- analytical_approx_best_case %>% filter(speciation_rate == 6^-6) %>%
+# p1
+p2 <- analytical_approx_best_case %>% filter(speciation_rate == 6e-06) %>%
   ggplot() + 
   geom_line(aes(x=prop_cover*100, y=best_case_instant,
                   linetype="Short-term\n(best case)", colour="Short-term\n(best case)")) +
@@ -652,20 +653,34 @@ p_combined <- analytical_approx_best_case %>% ungroup() %>%
     geom_ribbon(aes(x=prop_cover * 100,
                     ymin=power_law_min,
                     ymax=power_law_max,
-                    fill="Power-law SAR\n(0.1 <= z <= 0.3)"), alpha=0.5)+
+                    fill="Power-law SAR"), alpha=0.5)+
   geom_ribbon(aes(x=prop_cover * 100,
                   ymin=0,
                   ymax=prop_cover*100,
                   fill="Our approach\n(after extinction debt)"), alpha=0.5)+
   theme_classic()+
   scale_fill_manual(element_blank(), 
-                      breaks=c( "Power-law SAR\n(0.1 <= z <= 0.3)",
+                      breaks=c("Power-law SAR",
+                        # "Power-law SAR\n(0.1 ≤ z ≤ 0.3)",
                                 "Our approach\n(after immediate loss)",
                                 "Our approach\n(after extinction debt)"),
-                      values=c(plot_colours[9],  plot_colours[3], ggthemr_light_colours[1]))+
+                      values=c(plot_colours[9],  plot_colours[3], ggthemr_light_colours[1]),
+                    labels=list(
+                      # expression("Power-law SAR\n"(0.1<=z+0.3)),
+                      "Power-law SAR\n(0.1 ≤ z ≤ 0.3)",
+                                      # (0.1 <=z~phantom()<=0.3))),
+                      # expression(atop(Median~Nitrate-Nitrogen~(NO[3]^{textstyle("-")}-N),
+                                      # "Concentration"~(mg~L^{textstyle("-")})~phantom (1000000)~phantom (1000000))))
+
+                      
+                      # expression(paste("Power-law SAR\n",(0.1 <= z,
+                                              # ""<= "0.3"), sep="")),
+                             # "Power-law SAR\n(0.1 ≤ z ≤ 0.3)",
+                             "Our approach\n(after immediate loss)",
+                             "Our approach\n(after extinction debt)"))+
   geom_point(data=ed_regional_examples, aes(x=proportion_habitat*100, 
                                             y=proportion_richness*100,
-                                            shape="Our approach\n(empirical examples)"),
+                                            shape="Our approach\n(after extinction debt;\n empirical examples)"),
              colour="black") +
   geom_text_repel(data=ed_regional_examples, 
             aes(x=proportion_habitat*100, y=proportion_richness*100, label=short_label),
@@ -680,46 +695,28 @@ p_combined <- analytical_approx_best_case %>% ungroup() %>%
   theme(plot.title = element_text(size=10),
         legend.margin = margin(-0.25, 0.5, 0.25, 0.5, unit = "lines"),
         legend.position = c(0.75, 0.6),
+        legend.text.align = 0,
         legend.background = element_rect(size = 0.5, colour = 1),
         legend.title = element_text(size=10),
         legend.text = element_text(size=8))
 
-pdf(file.path(figure_dir, "figure6_combined.pdf"), 4.3, 4, useDingbats = FALSE)
+# pdf.options(encoding='ISOLatin2.enc')
+# Note this plot doesn't render properly on macOS
+pdf(file.path(figure_dir, "figure6_combined.pdf"), 4.3, 4)
 print(p_combined)
 dev.off()
-
-# Calculations for tropical forest trees
-# rho = 42000 # km^-2 
-# sigma = 0.0402 # km
-# epsilon_lo = .Machine$double.xmin
-# epsilon_hi = .Machine$double.neg.eps
-# A_max = 100
-# S_max = 1000
-# temp = uniroot(function(log_nu_est)S_contig(A_max*rho,exp(log_nu_est),sigma^2*rho)- 
-#                  S_max,lower=log(epsilon_lo),upper=log(1-epsilon_hi))
-# nu = exp(temp$root)
-# nu
-# A_max = 0.5
-# S_max = 222
-# temp = uniroot(function(log_nu_est)S_contig(A_max*rho,exp(log_nu_est),sigma^2*rho)- 
-#                  S_max,lower=log(epsilon_lo),upper=log(1-epsilon_hi))
-# nu = exp(temp$root)
-# 
-# A_max = 540
-# S_max = 840+89
-# temp = uniroot(function(log_nu_est)S_contig(A_max*rho,exp(log_nu_est),sigma^2*rho)- 
-#                  S_max,lower=log(epsilon_lo),upper=log(1-epsilon_hi))
-# nu = exp(temp$root)
 
 ################
 ## Appendices ##
 ################
 
 ##############
-# Appendix 2 #
+# Appendix 1 #
 ##############
+
+
 preston_df <- expand.grid(area=10^seq(1, 10, 0.001), 
-                          speciation_rate = c(0.0001, 0.00001, 0.00000001), sigma=c(8, 16, 32)) %>% 
+                          speciation_rate = c(0.0001, 0.000001, 0.00000001), sigma=c(8, 16, 32)) %>% 
   mutate(richness = S_contig(A = area, nu = speciation_rate, sigma_sq = sigma^2))
 
 sar_df <- expand.grid(area=10^seq(1, 10, 0.001), c=100) %>% 
@@ -732,18 +729,30 @@ p <- preston_df %>% ggplot() +
                   fill="Power-law\nSAR"), alpha=0.6, 
               colour=NA) + 
   geom_line(aes(x=area, y=richness, 
-                linetype = as.factor(speciation_rate), 
+                linetype = as.character(speciation_rate), 
                 colour=as.factor(sigma)))+
   scale_colour_viridis(expression(paste(sigma)), 
                        discrete=TRUE, option="plasma", end=0.9)+
   guides(linetype = guide_legend(override.aes = list(colour = "black")))+
-  scale_linetype_discrete("Speciation\nrate")+
+  scale_linetype_manual("Speciation\nrate",
+                          # breaks=c(0.0001, 0.000001, 0.00000001),
+                          values=c("solid", "dashed", "dotted"),
+                          labels=function(x) scales::trans_format("log10",
+                          scales::math_format(10^.x))(as.numeric(x)))+
+                          # breaks = scales::trans_breaks("log10", function(x) 10^x),
+                          # labels = scales::trans_format("log10", scales::math_format(10^.x)))+
   scale_fill_manual("", values = c("grey50"))+
-  scale_x_log10("Species richness")+
-  scale_y_log10("Area")+
+  scale_x_log10("Species richness",
+                breaks = scales::trans_breaks("log10", function(x) 10^x),
+                labels = scales::trans_format("log10", scales::math_format(10^.x)))+
+  scale_y_log10("Area",
+                breaks = scales::trans_breaks("log10", function(x) 10^x),
+                labels = scales::trans_format("log10", scales::math_format(10^.x)))+
   theme_classic()
-  
-pdf(file.path(figure_dir, "appendices", "appendix2_s0.pdf"), 6, 4, useDingbats = FALSE)
+
+# print(p)
+
+pdf(file.path(figure_dir, "appendices", "appendix1_s1.pdf"), 6, 4, useDingbats = FALSE)
 print(p)
 dev.off()
 ##############
@@ -768,7 +777,7 @@ p <- main_df %>% filter(type=="Random" | type == "Contiguous", sigma>2) %>%
                 mutate(scaled_sigma = sqrt(area/a_max)*sigma),
               fill=NA,linetype="dotted", colour="grey")+
   scale_shape_discrete("Percentage\ncover")
-pdf(file.path(figure_dir, "appendices", "appendix3_s1.pdf"), 6, 4, useDingbats = FALSE)
+pdf(file.path(figure_dir, "appendices", "appendix3_s2.pdf"), 6, 4, useDingbats = FALSE)
 print(p)
 dev.off()
 
@@ -850,7 +859,7 @@ p4 <- main_df %>% filter(sigma > 4) %>% ggplot()+
          shape = guide_legend(title.position="top", title.hjust = 0.5, override.aes = list(alpha = 1)))
 gga <- ggarrange(p1, p2, p3, p4, common.legend = TRUE, legend="bottom", nrow = 2, ncol=2,
                  labels = c("a)", "b)", "c)", "d)"), heights = c(0.95, 1.0), widths=c(0.92, 1.0))
-pdf(file.path(figure_dir, "appendices", "appendix3_s2.pdf"), 6.7, 7.5, useDingbats = FALSE)
+pdf(file.path(figure_dir, "appendices", "appendix3_s3.pdf"), 6.7, 7.5, useDingbats = FALSE)
 print(gga)
 dev.off()
 ggthemr_reset()
@@ -887,7 +896,7 @@ p <- ggplot(main_df %>% filter(type!="Contiguous", sigma > 4)) +
             aes(x = 50, y = 10000, label = str_mape, group=type),
             parse=TRUE, inherit.aes = FALSE, colour="black") + 
   theme(aspect.ratio = 1)
-pdf(file.path(figure_dir, "appendices", "appendix3_s3.pdf"), 6.7, 3, useDingbats = FALSE)    
+pdf(file.path(figure_dir, "appendices", "appendix3_s4.pdf"), 6.7, 3, useDingbats = FALSE)    
 print(p)
 dev.off()
 
@@ -932,7 +941,7 @@ p <- analytical_approx_ED %>%  filter(proportion_cover %in% c(0.5, 0.7, 0.9)) %>
   theme(legend.key.height=unit(2,"line")) + 
   theme(legend.key.width=unit(2,"line")) + 
   theme(aspect.ratio=1)
-pdf(file.path(figure_dir, "appendices", "appendix4_s3.5.pdf"), 6.7, 5, useDingbats = FALSE)
+pdf(file.path(figure_dir, "appendices", "appendix4_s5.pdf"), 6.7, 5, useDingbats = FALSE)
 print(p)
 dev.off()
 # Create dummy data for plotting speciation rate and sigma vs percent remaining
@@ -992,7 +1001,7 @@ p <- dummy_df %>% filter(speciation_rate == 1e-5) %>% ggplot(aes(x=sigma)) +
   theme(legend.key.height=unit(2,"line")) + 
   theme(legend.key.width=unit(2,"line"))
 
-pdf(file.path(figure_dir, "appendices", "appendix4_s4.pdf"), 7, 5, useDingbats = FALSE)
+pdf(file.path(figure_dir, "appendices", "appendix4_s6.pdf"), 7, 5, useDingbats = FALSE)
 print(p)
 dev.off()
 
@@ -1033,6 +1042,6 @@ p <- dummy_df %>% filter(sigma == 16, speciation_rate >= 10^-9) %>% ggplot() +
   theme(legend.key.height=unit(2,"line")) + 
   theme(legend.key.width=unit(2,"line"))
 
-pdf(file.path(figure_dir, "appendices", "appendix4_s5.pdf"), 7, 5, useDingbats = FALSE)
+pdf(file.path(figure_dir, "appendices", "appendix4_s7.pdf"), 7, 5, useDingbats = FALSE)
 print(p)
 dev.off()
