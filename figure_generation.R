@@ -9,6 +9,7 @@ library(ggpubr)
 library(magick) # Required for cowplot to plot images
 library(ggthemr)
 library(ggrepel)
+library(latex2exp)
 source("preston.R")
 source("plot_colours.R")
 ##################
@@ -666,16 +667,7 @@ p_combined <- analytical_approx_best_case %>% ungroup() %>%
                                 "Our approach\n(after extinction debt)"),
                       values=c(plot_colours[9],  plot_colours[3], ggthemr_light_colours[1]),
                     labels=list(
-                      # expression("Power-law SAR\n"(0.1<=z+0.3)),
-                      "Power-law SAR\n(0.1 ≤ z ≤ 0.3)",
-                                      # (0.1 <=z~phantom()<=0.3))),
-                      # expression(atop(Median~Nitrate-Nitrogen~(NO[3]^{textstyle("-")}-N),
-                                      # "Concentration"~(mg~L^{textstyle("-")})~phantom (1000000)~phantom (1000000))))
-
-                      
-                      # expression(paste("Power-law SAR\n",(0.1 <= z,
-                                              # ""<= "0.3"), sep="")),
-                             # "Power-law SAR\n(0.1 ≤ z ≤ 0.3)",
+                             "Power-law SAR\n(0.1 < z < 0.3)",
                              "Our approach\n(after immediate loss)",
                              "Our approach\n(after extinction debt)"))+
   geom_point(data=ed_regional_examples, aes(x=proportion_habitat*100, 
@@ -699,10 +691,8 @@ p_combined <- analytical_approx_best_case %>% ungroup() %>%
         legend.background = element_rect(size = 0.5, colour = 1),
         legend.title = element_text(size=10),
         legend.text = element_text(size=8))
-
-# pdf.options(encoding='ISOLatin2.enc')
-# Note this plot doesn't render properly on macOS
-pdf(file.path(figure_dir, "figure6_combined.pdf"), 4.3, 4)
+# Note this plot doesn't render <= signs properly, so this is altered manually using Inkscape (doh...)
+pdf(file.path(figure_dir, "figure6_combined.pdf"), 4.3, 4, useDingbats = FALSE)
 print(p_combined)
 dev.off()
 
