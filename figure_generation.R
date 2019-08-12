@@ -894,7 +894,8 @@ dev.off()
 ##############
 
 
-p <- analytical_approx_ED %>%  filter(proportion_cover %in% c(0.5, 0.7, 0.9)) %>% 
+p <- analytical_approx_ED %>%  filter(proportion_cover %in% c(0.5, 0.7, 0.9)) %>% rowwise() %>% 
+  mutate(max_pc_equilibrium = min(max_pc_equilibrium, 100)) %>% 
   ggplot(colour="black") + theme_classic() + 
   geom_ribbon(aes(x=a_max, ymin=max_pc_inst, ymax=100,
                   fill="Definite Immediate loss")) +
